@@ -65,6 +65,9 @@ set (CONFIG_LIBDIR  "${CONFIG_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set (CONFIG_DATADIR "${CONFIG_PREFIX}/${CMAKE_INSTALL_DATADIR}")
 set (CONFIG_MANDIR  "${CONFIG_PREFIX}/${CMAKE_INSTALL_MANDIR}")
 
+# Add our CMake extention module path
+list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
 
 # Enable DPF (DISTRHO Plugin Framework) plugin build.
 
@@ -94,6 +97,16 @@ option (CONFIG_WAYLAND "Enable Wayland support (EXPERIMENTAL) (default=no)" 0)
 # Enable Qt6 build preference.
 option (CONFIG_QT6 "Enable Qt6 build (default=yes)" 1)
 
+# Check if build FFTW3 from source.
+option (CONFIG_BUILD_FFTW3 "Build FFTW3 from source for static linking and SSE2 / AVX optimizations. If set to false, use system-provided FFTW3 instead (default=no)" 0)
+
+if (CONFIG_BUILD_FFTW3)
+  option (CONFIG_FFTW3_SSE2 "Compile FFTW3 with SSE2 support (default=yes)" 1)
+
+  option (CONFIG_FFTW3_AVX "Compile FFTW3 with AVX support. May not work well on old machines (e.g. Core 2 Series)! (default=no)" 0)
+
+  option (CONFIG_FFTW3_AVX2 "Compile FFTW3 with AVX support. May not work well on old machines (e.g. Core 2 Series)! (default=no)" 0)
+endif ()
 
 # Fix for new CMAKE_REQUIRED_LIBRARIES policy.
 if (POLICY CMP0075)
@@ -144,12 +157,19 @@ endif ()
 include (FindPkgConfig)
 
 # Check for FFTW3 libraries.
-pkg_check_modules (FFTW3 REQUIRED IMPORTED_TARGET fftw3f)
-if (FFTW3_FOUND)
-  set (CONFIG_FFTW3 1)
+if (CONFIG_BUILD_FFTW3)
+  include (BuildFFTW3)
+  message (STATUS "Will build FFTW3 from source tree.")
+  message (STATUS "padthv1 will link to static FFTW3 library.")
 else ()
-  message (FATAL_ERROR "*** FFTW3 library not found.")
-  set (CONFIG_FFTW3 0)
+  message (STATUS "Using FFTW3 provided by your system.")
+  pkg_check_modules (FFTW3 REQUIRED IMPORTED_TARGET fftw3f)
+  if (FFTW3_FOUND)
+    set (CONFIG_FFTW3 1)
+  else ()
+    message (FATAL_ERROR "*** FFTW3 library not found.")
+    set (CONFIG_FFTW3 0)
+  endif ()
 endif ()
 
 
@@ -177,4 +197,10 @@ show_option ("  VST plug-in build (via DPF)  . . . . . . . . . . ." CONFIG_DPF_V
 show_option ("  VST3 plug-in build (via DPF) . . . . . . . . . . ." CONFIG_DPF_VST3)
 show_option ("  LV2 plug-in build (via DPF)  . . . . . . . . . . ." CONFIG_DPF_LV2)
 show_option ("  CLAP plug-in build (via DPF) . . . . . . . . . . ." CONFIG_DPF_CLAP)
+show_option ("  Build FFTW3 from source  . . . . . . . . . . . . ." CONFIG_BUILD_FFTW3)
+if (CONFIG_BUILD_FFTW3)
+  show_option ("  FFTW3 SSE2 support . . . . . . . . . . . . . . . ." CONFIG_FFTW3_SSE2)
+  show_option ("  FFTW3 AVX support  . . . . . . . . . . . . . . . ." CONFIG_FFTW3_AVX)
+  show_option ("  FFTW3 AVX2 support . . . . . . . . . . . . . . . ." CONFIG_FFTW3_AVX2)
+endif ()
 message   ("\n  Install prefix . . . . . . . . . . . . . . . . . .: ${CONFIG_PREFIX}\n")

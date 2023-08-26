@@ -156,7 +156,11 @@ target_link_libraries (${PROJECT_NAME}    PUBLIC Qt${QT_VERSION_MAJOR}::Core Qt$
 target_link_libraries (${PROJECT_NAME}_ui PUBLIC Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Svg ${PROJECT_NAME})
 
 if (CONFIG_FFTW3)
-  target_link_libraries (${PROJECT_NAME} PRIVATE PkgConfig::FFTW3)
+  if (CONFIG_BUILD_FFTW3)
+    target_link_libraries (${PROJECT_NAME} PRIVATE fftw3f)
+  else ()
+    target_link_libraries (${PROJECT_NAME} PRIVATE PkgConfig::FFTW3)
+  endif ()
 endif ()
 
 if (CONFIG_DPF)
@@ -168,6 +172,16 @@ if (CONFIG_DPF)
 
   target_include_directories (${PROJECT_NAME}_dpf-dsp PRIVATE ${Qt6Widgets_INCLUDE_DIRS})
   target_include_directories(${PROJECT_NAME}_dpf-ui PRIVATE ${Qt6Widgets_INCLUDE_DIRS})
+
+  if (CONFIG_FFTW3 AND CONFIG_BUILD_FFTW3)
+    # Must let DPF plugin build depend on FFTW3, otherwise you will encounter error with Ninja.
+    # NOTE: Simply add dependency for ${PROJECT_NAME}_dpf is not enough. Should add for "dsp" and "ui" subtarget as well.
+    add_dependencies (${PROJECT_NAME}_dpf dep_fftw3)
+    add_dependencies (${PROJECT_NAME}_dpf-dsp dep_fftw3)
+    add_dependencies (${PROJECT_NAME}_dpf-ui dep_fftw3)
+
+    target_link_libraries (${PROJECT_NAME}_dpf PRIVATE fftw3f)
+  endif ()
 
   set (DPF_BINARY_DIR ${PROJECT_BINARY_DIR}/bin)
 
