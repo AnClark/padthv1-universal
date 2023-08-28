@@ -29,10 +29,6 @@
 // Forward decls.
 class padthv1_dpf;
 
-// Constants.
-static const int BASE_UI_WIDTH = 1100;
-static const int BASE_UI_HEIGHT = 510;
-
 // -----------------------------------------------------------------------------------------------------------
 // PadthV1PluginUI - DPF Plugin UI interface.
 
@@ -43,8 +39,6 @@ class PadthV1PluginUI : public UI {
 	std::unique_ptr<padthv1widget_dpf> fWidget;
 	WId fWinId;
 	WId fParent;
-
-	//ResizeHandle fResizeHandle;
 
 	// ----------------------------------------------------------------------------------------------------------------
 
