@@ -36,8 +36,8 @@
 #define DISTRHO_PLUGIN_NUM_OUTPUTS 2
 #define DISTRHO_UI_USER_RESIZABLE 1
 
-#define DISTRHO_UI_DEFAULT_WIDTH 1100
-#define DISTRHO_UI_DEFAULT_HEIGHT 510
+#define DISTRHO_UI_DEFAULT_WIDTH 1140
+#define DISTRHO_UI_DEFAULT_HEIGHT 642
 
 // Allow UI to access DSP side directly.
 // This is discouraged by DPF, but padthv1 indeed need this,
