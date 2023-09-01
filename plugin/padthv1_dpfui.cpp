@@ -89,6 +89,7 @@ PadthV1PluginUI::~PadthV1PluginUI()
 */
 void PadthV1PluginUI::parameterChanged(uint32_t index, float value)
 {
+	DISTRHO_SAFE_ASSERT_RETURN(fWidget != nullptr,);
 	fWidget->setUIParamValue(padthv1::ParamIndex(index), value);
 }
 
@@ -99,6 +100,7 @@ void PadthV1PluginUI::focus()
 {
 	d_stdout("focus");
 
+	DISTRHO_SAFE_ASSERT_RETURN(fWidget != nullptr,);
 	fWidget->setFocus();
 }
 
@@ -121,7 +123,7 @@ void PadthV1PluginUI::titleChanged(const char* const title)
 {
 	d_stdout("titleChanged %s", title);
 
-	DISTRHO_SAFE_ASSERT_RETURN(fWidget != 0,);
+	DISTRHO_SAFE_ASSERT_RETURN(fWidget != nullptr,);
 	fWidget->setWindowTitle(QString(title));
 }
 
@@ -129,7 +131,7 @@ void PadthV1PluginUI::transientParentWindowChanged(const uintptr_t winId)
 {
 	d_stdout("transientParentWindowChanged %lu", winId);
 
-	DISTRHO_SAFE_ASSERT_RETURN(fWidget != 0,);
+	DISTRHO_SAFE_ASSERT_RETURN(fWidget != nullptr,);
 	// NOTICE: Seems not implemented by Qt
 }
 
@@ -153,7 +155,7 @@ void PadthV1PluginUI::uiIdle()
 {
 	// d_stdout("uiIdle");
 
-	if (fWidget)
+	if (fWidget != nullptr)
 	{
 		QApplication::processEvents();
 		return;
