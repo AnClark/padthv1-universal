@@ -24,6 +24,7 @@
 
 #include <QWindow>
 #include <QApplication>
+#include <QMainWindow>
 
 //-------------------------------------------------------------------------
 // PadthV1PluginUI - DPF Plugin UI interface.
@@ -42,26 +43,36 @@ PadthV1PluginUI::PadthV1PluginUI()
 	// This is discouraged by DPF, but padthv1 do need this due to its designation.
 	PadthV1Plugin *fDspInstance = (PadthV1Plugin*) UI::getPluginInstancePointer();
 
+	// Load background window.
+	// Showing UI within background window can prevent unexpected "ghost shadows" when resizing.
+	fWindow = std::make_unique<QMainWindow>();
+
+	// Load padthv1 main UI part.
 	fWidget = std::make_unique<padthv1widget_dpf>(fDspInstance->getSynthesizer(), this);
 
-	// Get the recommended UI size, then apply it.
-	const QSize& hint = fWidget->sizeHint();
-	setWidth(hint.width());
-	setHeight(hint.height());
+	// Set minimum size
+	m_widgetSize = fWidget->sizeHint();
+	m_widgetSize.setHeight(m_widgetSize.height() * getScaleFactor());
+	m_widgetSize.setWidth(m_widgetSize.width() * getScaleFactor());
+	fWidget->setMinimumSize(m_widgetSize);
+	fWindow->setMinimumSize(m_widgetSize);
+
+	// Embed padthv1 UI part into background window
+	fWidget->setParent(&*fWindow);
 
 	// Explicitly set window position to avoid misplace on some platforms (especially Windows)
 	fWidget->move(0, 0);
 
 	// Embed plug-in UI into host window.
 	fParent = (WId) getParentWindowHandle();
-	fWinId = fWidget->winId();	// Must require WinID first, otherwise plug-in will crash!
+	fWinId = fWindow->winId();	// Must require WinID first, otherwise plug-in will crash!
 	if (fParent)
 	{
-		fWidget->windowHandle()->setParent(QWindow::fromWinId(fParent));
+		fWindow->windowHandle()->setParent(QWindow::fromWinId(fParent));
 	}
 
 	// Explicitly show UI. This is required when using external UI mode of DPF.
-	fWidget->show();
+	fWindow->show();
 }
 
 PadthV1PluginUI::~PadthV1PluginUI()
@@ -100,8 +111,10 @@ void PadthV1PluginUI::sizeChanged(uint width, uint height)
 {
 	UI::sizeChanged(width, height);
 
-	if (fWidget != 0)
-		fWidget->resize(width, height);
+	if (fWindow != nullptr && fWidget != nullptr) {
+		fWindow->resize(width, height);
+ 		fWidget->resize(width, height);
+	}
 }
 
 void PadthV1PluginUI::titleChanged(const char* const title)
