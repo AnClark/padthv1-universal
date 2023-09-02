@@ -66,6 +66,9 @@ PadthV1PluginUI::PadthV1PluginUI()
 	// Embed plug-in UI into host window.
 	fParent = (WId) getParentWindowHandle();
 	fWinId = fWindow->winId();	// Must require WinID first, otherwise plug-in will crash!
+#ifdef DISTRHO_PLUGIN_TARGET_LV2
+	fWinId_Widget = fWidget->winId();	// On LV2, we need to require fWidget's WinId as well 
+#endif
 	if (fParent)
 	{
 		fWindow->windowHandle()->setParent(QWindow::fromWinId(fParent));

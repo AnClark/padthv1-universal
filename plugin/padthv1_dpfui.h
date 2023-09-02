@@ -39,7 +39,7 @@ class PadthV1PluginUI : public UI {
 
 	std::unique_ptr<QMainWindow> fWindow;	// Background window
 	std::unique_ptr<padthv1widget_dpf> fWidget;	// The main UI part
-	WId fWinId;
+	WId fWinId, fWinId_Widget;
 	WId fParent;
 
 	QSize m_widgetSize;	// Target Qt UI size with scale factor considered
