@@ -93,6 +93,19 @@ void PadthV1PluginUI::parameterChanged(uint32_t index, float value)
 	fWidget->setUIParamValue(padthv1::ParamIndex(index), value);
 }
 
+/**
+	A state has changed on the plugin side.
+	This is called by the host to inform the UI about state changes.
+*/
+void PadthV1PluginUI::stateChanged(const char* key, const char* value)
+{
+	DISTRHO_SAFE_ASSERT_RETURN(fWidget != nullptr,);
+
+	d_stderr("[UI] stateChanged() invoked.");
+
+	fWidget->refreshUISample();
+}
+
 /* --------------------------------------------------------------------------------------------------------
 * External Window overrides */
 
@@ -180,6 +193,7 @@ END_NAMESPACE_DISTRHO
 padthv1_dpfui::padthv1_dpfui(padthv1_dpf *pSynth, DISTRHO::PadthV1PluginUI *pluginUiInterface)
 	: padthv1_ui(pSynth, true), m_plugin_ui(pluginUiInterface)
 {
+	this->m_pSynth = pSynth;
 }
 
 void padthv1_dpfui::write_function(padthv1::ParamIndex index, float fValue) const

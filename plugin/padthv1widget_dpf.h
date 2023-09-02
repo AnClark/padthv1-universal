@@ -50,6 +50,9 @@ public:
 	// Param method. (Host -> UI)
 	void setUIParamValue(padthv1::ParamIndex paramIndex, float value);
 
+	// State method. (Host -> UI)
+	void refreshUISample();
+
 protected:
 
 	// Synth engine accessor.

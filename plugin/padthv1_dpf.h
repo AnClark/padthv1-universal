@@ -61,6 +61,9 @@ public:
 	void activate();
 	void deactivate();
 
+	const char* saveState();
+	void loadState(const char* stateData);
+
 	uint32_t urid_map(const char *uri) const;
 
 	static void qapp_instantiate();
@@ -163,12 +166,15 @@ protected:
 	// Init
 
 	void initParameter(uint32_t index, Parameter& parameter) override;
+	void initState(uint32_t index, State& state) override;
 
 	// ----------------------------------------------------------------------------------------------------------------
 	// Internal data
 
 	float getParameterValue(uint32_t index) const override;
 	void setParameterValue(uint32_t index, float value) override;
+	String getState(const char* key) const override;
+	void setState(const char* key, const char* value) override;
 
 	// ----------------------------------------------------------------------------------------------------------------
 	// Audio/MIDI Processing

@@ -44,6 +44,11 @@
 // because padthv1 UI accesses synth engine, see padthv1widget.cpp.
 #define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 1
 
+// Enable plugin state support.
+// padthv1 will save sample tuning data to plugin state.
+#define DISTRHO_PLUGIN_WANT_STATE 1
+#define DISTRHO_PLUGIN_WANT_FULL_STATE 1  // MUST enable this, otherwise host will not acquire state from plugin!
+
 #endif // DISTRHO_PLUGIN_INFO_H_INCLUDED
 
 // end of DistrhoPluginInfo.h

@@ -170,6 +170,7 @@ if (CONFIG_DPF)
 
   target_link_libraries (${PROJECT_NAME}_dpf PRIVATE ${PROJECT_NAME}_ui)
 
+  target_include_directories (${PROJECT_NAME}_dpf PRIVATE ${Qt6Widgets_INCLUDE_DIRS})
   target_include_directories (${PROJECT_NAME}_dpf-dsp PRIVATE ${Qt6Widgets_INCLUDE_DIRS})
   target_include_directories(${PROJECT_NAME}_dpf-ui PRIVATE ${Qt6Widgets_INCLUDE_DIRS})
 

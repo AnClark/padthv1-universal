@@ -133,4 +133,11 @@ void padthv1widget_dpf::updateParam (
 	m_pSynthUi->write_function(index, fValue);
 }
 
+// State method: Host -> UI.
+// Render new sample config values on UI. This is called by DPF UI's stateChanged() method.
+void padthv1widget_dpf::refreshUISample()
+{
+	updateSample();
+}
+
 // end of padthv1widget_dpf.cpp

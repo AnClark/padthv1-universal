@@ -22,10 +22,12 @@
 #include "padthv1_dpf.h"
 #include "padthv1_param.h"
 #include "padthv1_config.h"
+#include "padthv1_sched.h"
 
 #include "DistrhoPluginUtils.hpp"
 
 #include <QApplication>
+#include <QtXml/QDomDocument>
 
 //-------------------------------------------------------------------------
 // padthv1_dpf - Constants.
@@ -235,6 +237,93 @@ void padthv1_dpf::run(const float **inputs, float **outputs, uint32_t nframes, c
 }
 
 
+//-------------------------------------------------------------------------
+// padthv1_dpf - state management APIs.
+//
+
+const char* padthv1_dpf::saveState()
+{
+	padthv1_dpf *pPlugin = this;
+
+	// Save state as XML chunk...
+	//
+
+	QDomDocument doc(PADTHV1_TITLE);
+	QDomElement eState = doc.createElement("state");
+
+	QDomElement eSamples = doc.createElement("samples");
+	padthv1_param::saveSamples(pPlugin, doc, eSamples);
+	eState.appendChild(eSamples);
+
+	if (pPlugin->isTuningEnabled()) {
+		QDomElement eTuning = doc.createElement("tuning");
+		padthv1_param::saveTuning(pPlugin, doc, eTuning);
+		eState.appendChild(eTuning);
+	}
+
+	doc.appendChild(eState);
+
+	const QByteArray data(doc.toByteArray());
+	const char *value = data.constData();
+	[[maybe_unused]] size_t size = data.size();
+
+	return value;
+}
+
+
+void padthv1_dpf::loadState(const char* stateData)
+{
+	padthv1_dpf *pPlugin = this;
+
+	// Retrieve state as XML chunk...
+	//
+
+	size_t size = 0;
+	uint32_t type = 0;
+//	flags = 0;
+
+	const char *value = stateData;
+	size = strlen(stateData);
+
+	if (size < 2) {
+		d_stderr2("[ERROR] State size < 2, cannot read state.");
+		return;
+	}
+
+	if (value == nullptr) {
+		d_stderr2("[ERROR] value is nullptr, cannot read state.");
+		return;
+	}
+
+	QDomDocument doc(PADTHV1_TITLE);
+	if (doc.setContent(QByteArray(value, size))) {
+		QDomElement eState = doc.documentElement();
+	#if 1//PADTHV1_LV2_LEGACY
+		if (eState.tagName() == "samples")
+			padthv1_param::loadSamples(pPlugin, eState);
+		else
+	#endif
+		if (eState.tagName() == "state") {
+			for (QDomNode nChild = eState.firstChild();
+					!nChild.isNull();
+						nChild = nChild.nextSibling()) {
+				QDomElement eChild = nChild.toElement();
+				if (eChild.isNull())
+					continue;
+				if (eChild.tagName() == "samples")
+					padthv1_param::loadSamples(pPlugin, eChild);
+				else
+				if (eChild.tagName() == "tuning")
+					padthv1_param::loadTuning(pPlugin, eChild);
+			}
+		}
+	}
+
+	pPlugin->reset();
+
+	padthv1_sched::sync_notify(pPlugin, padthv1_sched::Sample, 3);
+}
+
 
 //-------------------------------------------------------------------------
 // PadthV1Plugin - DPF plugin interface.
@@ -243,7 +332,7 @@ void padthv1_dpf::run(const float **inputs, float **outputs, uint32_t nframes, c
 START_NAMESPACE_DISTRHO
 
 PadthV1Plugin::PadthV1Plugin()
-	: Plugin(padthv1::NUM_PARAMS, 0, 0) // parameters, programs, states
+	: Plugin(padthv1::NUM_PARAMS, 0, 1) // parameters, programs, states
 {
 	padthv1_dpf::qapp_instantiate();
 }
@@ -291,6 +380,16 @@ void PadthV1Plugin::initParameter(uint32_t index, Parameter& parameter)
 }
 
 
+void PadthV1Plugin::initState(uint32_t index, State& state)
+{
+	state.key = "state";
+	if (fSynthesizer != nullptr)
+		state.defaultValue = fSynthesizer->saveState();	// Fetch default state value from synth
+
+	state.hints = kStateIsHostWritable;
+}
+
+
 float PadthV1Plugin::getParameterValue(uint32_t index) const
 {
 	DISTRHO_SAFE_ASSERT(fSynthesizer != nullptr)
@@ -304,6 +403,28 @@ void PadthV1Plugin::setParameterValue(uint32_t index, float value)
 	DISTRHO_SAFE_ASSERT(fSynthesizer != nullptr)
 
 	fSynthesizer->setParamValue((padthv1::ParamIndex)index, value);
+}
+
+
+String PadthV1Plugin::getState(const char* key) const
+{
+	d_stderr("[DSP] getState() invoked.");
+
+	if (fSynthesizer != nullptr) {
+		const char* _currentState = fSynthesizer->saveState();
+		return String(_currentState);
+	}
+
+	return String();
+}
+
+
+void PadthV1Plugin::setState(const char* key, const char* value)
+{
+	d_stderr("[DSP] setState() invoked. key: %s, Value:\n%s", key, value);
+
+	if (fSynthesizer != nullptr)
+		fSynthesizer->loadState(value);
 }
 
 

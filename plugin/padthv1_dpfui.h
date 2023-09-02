@@ -56,7 +56,7 @@ protected:
 
 	void parameterChanged(uint32_t index, float value) override;
 	//void programLoaded(uint32_t index) override;
-	//void stateChanged(const char* key, const char* value) override;
+	void stateChanged(const char* key, const char* value) override;
 
 	// ----------------------------------------------------------------------------------------------------------------
 	// External window overrides
@@ -98,6 +98,7 @@ public:
 
 private:
 	DISTRHO::PadthV1PluginUI *m_plugin_ui;
+	padthv1_dpf *m_pSynth;	// For accessing state only
 };
 
 #endif// __padthv1_dpfui_h
